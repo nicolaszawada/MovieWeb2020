@@ -2,6 +2,12 @@
 
 <h1>Film overzicht</h1>
 
+@if(Model == null || !Model.Any())
+{
+    <p>Er zijn geen films!</p>
+}
+else
+{
 <table>
     <thead>
         <tr>
@@ -10,19 +16,22 @@
         </tr>
     </thead>
     <tbody>
-        @foreach(var movie in Model)
+        @foreach (var movie in Model)
         {
-        <tr>
-            <td>
-                @movie.Title
-            </td>
-            <td>
-                <a asp-controller="Movie" asp-action="Detail" asp-route-id="@movie.Id">Detail</a>
-            </td>
-        </tr>
+            <tr>
+                <td>
+                    @movie.Title
+                </td>
+                <td>
+                    <a asp-controller="Movie" asp-action="Detail" asp-route-id="@movie.Id">Detail</a>
+                </td>
+            </tr>
         }
     </tbody>
 
 </table>
+}
+
+
 
 <a asp-controller="Movie" asp-action="Create">Create movie</a>
