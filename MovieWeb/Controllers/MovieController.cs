@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using MovieWeb.Database;
 using MovieWeb.Domain;
 using MovieWeb.Models;
@@ -16,6 +17,7 @@ namespace MovieWeb.Controllers
             _movieDatabase = movieDatabase;
         }
 
+        [HttpGet]
         public IActionResult Index()
         {
             IEnumerable<Movie> moviesFromDb = _movieDatabase.GetMovies();
@@ -29,6 +31,7 @@ namespace MovieWeb.Controllers
             return View(movies);
         }
 
+        [HttpGet]
         public IActionResult Detail(int id)
         {
             Movie movieFromDb = _movieDatabase.GetMovie(id);
@@ -44,14 +47,23 @@ namespace MovieWeb.Controllers
             return View(movie);
         }
 
+        [HttpGet]
         public IActionResult Create()
         {
-            return View();
+            MovieCreateViewModel vm = new MovieCreateViewModel();
+            vm.ReleaseDate = DateTime.Now;
+
+            return View(vm);
         }
 
         [HttpPost]
         public IActionResult Create(MovieCreateViewModel movie)
         {
+            if (!TryValidateModel(movie))
+            {
+                return View(movie);
+            }
+
             Movie newMovie = new Movie()
             {
                 Title = movie.Title,
