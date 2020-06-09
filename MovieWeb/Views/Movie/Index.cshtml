@@ -13,22 +13,29 @@ else
         <tr>
             <th>Title</th>
             <th></th>
+            <th></th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
         @foreach (var movie in Model)
         {
-            <tr>
-                <td>
-                    @movie.Title
-                </td>
-                <td>
-                    <a asp-controller="Movie" asp-action="Detail" asp-route-id="@movie.Id">Detail</a>
-                </td>
-            </tr>
+        <tr>
+            <td>
+                @movie.Title
+            </td>
+            <td>
+                <a asp-controller="Movie" asp-action="Detail" asp-route-id="@movie.Id">Detail</a>
+            </td>
+            <td>
+                <a asp-controller="Movie" asp-action="Edit" asp-route-id="@movie.Id">Edit</a>
+            </td>
+            <td>
+                <a asp-controller="Movie" asp-action="Delete" asp-route-id="@movie.Id">Delete</a>
+            </td>
+        </tr>
         }
     </tbody>
-
 </table>
 }
 
