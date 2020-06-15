@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -20,5 +23,7 @@ namespace MovieWeb.Models
         [DisplayName("Release datum")]
         [Range(typeof(DateTime), "01/01/2000", "01/01/2030", ErrorMessage = "Datum moet tussen...")]
         public DateTime ReleaseDate { get; set; }
+
+        public IFormFile Photo { get; set; }
     }
 }

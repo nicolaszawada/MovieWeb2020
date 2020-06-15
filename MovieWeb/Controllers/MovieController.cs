@@ -1,26 +1,36 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MovieWeb.Database;
 using MovieWeb.Domain;
 using MovieWeb.Models;
+using MovieWeb.Services;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace MovieWeb.Controllers
 {
     public class MovieController : Controller
     {
-        private readonly IMovieDatabase _movieDatabase;
+        private readonly IWebHostEnvironment _hostingEnvironment;
+        private readonly IMessageService _messageService;
+        private readonly MovieDbContext _movieDbContext;
 
-        public MovieController(IMovieDatabase movieDatabase)
+        public MovieController(IWebHostEnvironment hostingEnvironment, 
+            IMessageService messageService, MovieDbContext movieDbContext)
         {
-            _movieDatabase = movieDatabase;
+            _hostingEnvironment = hostingEnvironment;
+            _messageService = messageService;
+            _movieDbContext = movieDbContext;
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            IEnumerable<Movie> moviesFromDb = _movieDatabase.GetMovies();
+            IEnumerable<Movie> moviesFromDb = await _movieDbContext.Movies.ToListAsync();
+
             List<MovieListViewModel> movies = new List<MovieListViewModel>();
 
             foreach (Movie movie in moviesFromDb)
@@ -32,16 +42,17 @@ namespace MovieWeb.Controllers
         }
 
         [HttpGet]
-        public IActionResult Detail(int id)
+        public async Task<IActionResult> Detail(int id)
         {
-            Movie movieFromDb = _movieDatabase.GetMovie(id);
+            Movie movieFromDb = await _movieDbContext.Movies.FindAsync(id);
 
             MovieDetailViewModel movie = new MovieDetailViewModel()
             {
                 Title = movieFromDb.Title,
                 Description = movieFromDb.Description,
                 ReleaseDate = movieFromDb.ReleaseDate,
-                Genre = movieFromDb.Genre
+                Genre = movieFromDb.Genre,
+                Photo = movieFromDb.Photo
             };
 
             return View(movie);
@@ -57,12 +68,14 @@ namespace MovieWeb.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(MovieCreateViewModel movie)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(MovieCreateViewModel movie)
         {
             if (!TryValidateModel(movie))
             {
                 return View(movie);
             }
+
 
             Movie newMovie = new Movie()
             {
@@ -70,17 +83,34 @@ namespace MovieWeb.Controllers
                 Description = movie.Description,
                 ReleaseDate = movie.ReleaseDate,
                 Genre = movie.Genre
-            };
+                };
 
-            _movieDatabase.Insert(newMovie);
+            if (movie.Photo != null)
+            {
+                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(movie.Photo.FileName);
+                var pathName = Path.Combine(_hostingEnvironment.WebRootPath, "pics");
+                var fileNameWithPath = Path.Combine(pathName, uniqueFileName);
+
+                using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                {
+                    movie.Photo.CopyTo(stream);
+                }
+
+                newMovie.Photo = "/pics/" + uniqueFileName;
+            }
+
+            _movieDbContext.Movies.Add(newMovie);
+            await _movieDbContext.SaveChangesAsync();
+
+            _messageService.Send("Er heeft iemand een film aangemaakt!");
 
             return RedirectToAction("Index");
         }
 
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            Movie movieFromDb = _movieDatabase.GetMovie(id);
+            Movie movieFromDb = await _movieDbContext.Movies.FindAsync(id);
 
             MovieEditViewModel vm = new MovieEditViewModel()
             {
@@ -94,38 +124,40 @@ namespace MovieWeb.Controllers
         }
 
         [HttpPost]
-        public IActionResult Edit(int id, MovieEditViewModel vm)
+        public async Task<IActionResult> Edit(int id, MovieEditViewModel vm)
         {
             if (!TryValidateModel(vm))
             {
                 return View(vm);
             }
 
-            Movie domainMovie = new Movie()
-            {
-                Id = id,
-                Title = vm.Title,
-                Description = vm.Description,
-                Genre = vm.Genre,
-                ReleaseDate = vm.ReleaseDate
-            };
+            Movie domainMovie = await _movieDbContext.Movies.FindAsync(id);
 
-            _movieDatabase.Update(id, domainMovie);
+            domainMovie.Title = vm.Title;
+            domainMovie.Description = vm.Description;
+            domainMovie.Genre = vm.Genre;
+            domainMovie.ReleaseDate = vm.ReleaseDate;
+
+            _movieDbContext.Update(domainMovie);
+
+           await _movieDbContext.SaveChangesAsync();
 
             return RedirectToAction("Detail", new { Id = id });
         }
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            Movie movieFromDb = _movieDatabase.GetMovie(id);
+            Movie movieFromDb = await _movieDbContext.Movies.FindAsync(id);
 
             return View(new MovieDeleteViewModel() { Id = movieFromDb.Id, Title = movieFromDb.Title });
         }
 
         [HttpPost]
-        public IActionResult ConfirmDelete(int id)
+        public async Task<IActionResult> ConfirmDelete(int id)
         {
-            _movieDatabase.Delete(id);
+            Movie movieToDelete = await _movieDbContext.Movies.FindAsync(id);
+            _movieDbContext.Movies.Remove(movieToDelete);
+            await _movieDbContext.SaveChangesAsync();
 
             return RedirectToAction("Index");
         }
