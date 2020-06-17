@@ -10,7 +10,7 @@ namespace MovieWeb.Migrations
                 name: "WatchStatusId",
                 table: "Movies",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 1);
 
             migrationBuilder.CreateTable(
                 name: "WatchStatuses",
