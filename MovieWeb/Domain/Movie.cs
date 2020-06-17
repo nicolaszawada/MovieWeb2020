@@ -13,5 +13,7 @@ namespace MovieWeb.Domain
         public string Director { get; set; }
         public DateTime ReleaseDate { get; set; }
         public string Photo { get; set; }
+        public WatchStatus WatchStatus { get; set; }
+        public int WatchStatusId { get; set; }
     }
 }

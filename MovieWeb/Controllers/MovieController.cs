@@ -18,7 +18,7 @@ namespace MovieWeb.Controllers
         private readonly IMessageService _messageService;
         private readonly MovieDbContext _movieDbContext;
 
-        public MovieController(IWebHostEnvironment hostingEnvironment, 
+        public MovieController(IWebHostEnvironment hostingEnvironment,
             IMessageService messageService, MovieDbContext movieDbContext)
         {
             _hostingEnvironment = hostingEnvironment;
@@ -44,7 +44,8 @@ namespace MovieWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> Detail(int id)
         {
-            Movie movieFromDb = await _movieDbContext.Movies.FindAsync(id);
+            Movie movieFromDb =
+                await _movieDbContext.Movies.Include(movie => movie.WatchStatus).FirstOrDefaultAsync(movie => movie.Id == id);
 
             MovieDetailViewModel movie = new MovieDetailViewModel()
             {
@@ -52,17 +53,29 @@ namespace MovieWeb.Controllers
                 Description = movieFromDb.Description,
                 ReleaseDate = movieFromDb.ReleaseDate,
                 Genre = movieFromDb.Genre,
-                Photo = movieFromDb.Photo
+                Photo = movieFromDb.Photo,
+                WatchStatus = movieFromDb.WatchStatus.Name
             };
 
             return View(movie);
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             MovieCreateViewModel vm = new MovieCreateViewModel();
             vm.ReleaseDate = DateTime.Now;
+
+            var watchStatuses = await _movieDbContext.WatchStatuses.ToListAsync();
+
+            foreach (WatchStatus watchStatus in watchStatuses)
+            {
+                vm.WatchStatuses.Add(new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem()
+                {
+                    Value = watchStatus.Id.ToString(),
+                    Text = watchStatus.Name
+                });
+            }
 
             return View(vm);
         }
@@ -82,8 +95,9 @@ namespace MovieWeb.Controllers
                 Title = movie.Title,
                 Description = movie.Description,
                 ReleaseDate = movie.ReleaseDate,
-                Genre = movie.Genre
-                };
+                Genre = movie.Genre,
+                WatchStatusId = movie.SelectedWatchStatus
+            };
 
             if (movie.Photo != null)
             {
@@ -140,7 +154,7 @@ namespace MovieWeb.Controllers
 
             _movieDbContext.Update(domainMovie);
 
-           await _movieDbContext.SaveChangesAsync();
+            await _movieDbContext.SaveChangesAsync();
 
             return RedirectToAction("Detail", new { Id = id });
         }

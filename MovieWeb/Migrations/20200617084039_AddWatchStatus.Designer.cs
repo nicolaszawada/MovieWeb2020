@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MovieWeb.Database;
 
 namespace MovieWeb.Migrations
 {
     [DbContext(typeof(MovieDbContext))]
-    partial class MovieDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200617084039_AddWatchStatus")]
+    partial class AddWatchStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,28 +70,6 @@ namespace MovieWeb.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("WatchStatuses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Nog niet gezien"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Al gezien"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Nooit meer zien!!!"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Nog eens opnieuw zien"
-                        });
                 });
 
             modelBuilder.Entity("MovieWeb.Domain.Movie", b =>

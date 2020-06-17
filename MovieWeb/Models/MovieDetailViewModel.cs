@@ -9,5 +9,6 @@ namespace MovieWeb.Models
         public string Genre { get; set; }
         public DateTime ReleaseDate { get; set; }
         public string Photo { get; set; }
+        public string WatchStatus { get; set; }
     }
 }

@@ -25,5 +25,9 @@ namespace MovieWeb.Models
         public DateTime ReleaseDate { get; set; }
 
         public IFormFile Photo { get; set; }
+
+        public List<SelectListItem> WatchStatuses { get; set; } = new List<SelectListItem>();
+
+        public int SelectedWatchStatus { get; set; }
     }
 }
