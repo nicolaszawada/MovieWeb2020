@@ -18,6 +18,14 @@ else
 <strong>Release Date</strong>
 <p>@CalculateReleaseDateMessage(Model.ReleaseDate)</p>
 
+<strong>Tags</strong>
+<ul>
+    @foreach(string tag in Model.Tags)
+    {
+        <li>@tag</li>
+    }
+</ul>
+
 <strong>Photo</strong>
 <img src="@Model.Photo" />
 

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace MovieWeb.Models
 {
@@ -10,5 +12,6 @@ namespace MovieWeb.Models
         public DateTime ReleaseDate { get; set; }
         public string Photo { get; set; }
         public string WatchStatus { get; set; }
+        public IEnumerable<string> Tags { get; set; }
     }
 }

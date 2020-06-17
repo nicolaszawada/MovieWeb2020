@@ -29,5 +29,9 @@ namespace MovieWeb.Models
         public List<SelectListItem> WatchStatuses { get; set; } = new List<SelectListItem>();
 
         public int SelectedWatchStatus { get; set; }
+
+        public List<SelectListItem> Tags { get; set; } = new List<SelectListItem>();
+
+        public int[] SelectedTags { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MovieWeb.Database;
 using MovieWeb.Domain;
@@ -8,6 +9,7 @@ using MovieWeb.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MovieWeb.Controllers
@@ -45,7 +47,11 @@ namespace MovieWeb.Controllers
         public async Task<IActionResult> Detail(int id)
         {
             Movie movieFromDb =
-                await _movieDbContext.Movies.Include(movie => movie.WatchStatus).FirstOrDefaultAsync(movie => movie.Id == id);
+                await _movieDbContext.Movies
+                .Include(movie => movie.WatchStatus)
+                .Include(movie => movie.MovieTags)
+                .ThenInclude(movieTag => movieTag.Tag)
+                .FirstOrDefaultAsync(movie => movie.Id == id);
 
             MovieDetailViewModel movie = new MovieDetailViewModel()
             {
@@ -54,8 +60,18 @@ namespace MovieWeb.Controllers
                 ReleaseDate = movieFromDb.ReleaseDate,
                 Genre = movieFromDb.Genre,
                 Photo = movieFromDb.Photo,
-                WatchStatus = movieFromDb.WatchStatus.Name
+                WatchStatus = movieFromDb.WatchStatus.Name,
+                Tags = movieFromDb.MovieTags.Select(movieTag => movieTag.Tag.Name)
             };
+
+            //List<string> tags = new List<string>();
+
+            //foreach(var movieTag in movieFromDb.MovieTags)
+            //{
+            //    tags.Add(movieTag.Tag.Name);
+            //}
+
+            //movie.Tags = tags;
 
             return View(movie);
         }
@@ -77,6 +93,9 @@ namespace MovieWeb.Controllers
                 });
             }
 
+            var tags = await _movieDbContext.Tags.ToListAsync();
+            vm.Tags = tags.Select(tag => new SelectListItem() { Value = tag.Id.ToString(), Text = tag.Name }).ToList();
+
             return View(vm);
         }
 
@@ -96,8 +115,18 @@ namespace MovieWeb.Controllers
                 Description = movie.Description,
                 ReleaseDate = movie.ReleaseDate,
                 Genre = movie.Genre,
-                WatchStatusId = movie.SelectedWatchStatus
+                WatchStatusId = movie.SelectedWatchStatus,
+                // MovieTag = movie.SelectedTags.Select(tag => new MovieTag() { TagId = tag }).ToList()
             };
+
+            var movieTags = new List<MovieTag>();
+
+            foreach (var selectedTag in movie.SelectedTags)
+            {
+                movieTags.Add(new MovieTag() { TagId = selectedTag });
+            }
+
+            newMovie.MovieTags = movieTags;
 
             if (movie.Photo != null)
             {
