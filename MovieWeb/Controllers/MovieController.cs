@@ -153,15 +153,19 @@ namespace MovieWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            Movie movieFromDb = await _movieDbContext.Movies.FindAsync(id);
+            Movie movieFromDb = await _movieDbContext.Movies.Include(movie => movie.MovieTags).FirstOrDefaultAsync(m => m.Id == id);
 
             MovieEditViewModel vm = new MovieEditViewModel()
             {
                 Title = movieFromDb.Title,
                 Description = movieFromDb.Description,
                 ReleaseDate = movieFromDb.ReleaseDate,
-                Genre = movieFromDb.Genre
+                Genre = movieFromDb.Genre,
+                SelectedTags = movieFromDb.MovieTags.Select(mt => mt.TagId).ToArray()
             };
+
+            var tags = await _movieDbContext.Tags.ToListAsync();
+            vm.Tags = tags.Select(tag => new SelectListItem() { Value = tag.Id.ToString(), Text = tag.Name }).ToList();
 
             return View(vm);
         }
@@ -174,12 +178,15 @@ namespace MovieWeb.Controllers
                 return View(vm);
             }
 
-            Movie domainMovie = await _movieDbContext.Movies.FindAsync(id);
+            Movie domainMovie = await _movieDbContext.Movies.Include(m => m.MovieTags).FirstOrDefaultAsync(m => m.Id == id);
+
+            _movieDbContext.MovieTags.RemoveRange(domainMovie.MovieTags);
 
             domainMovie.Title = vm.Title;
             domainMovie.Description = vm.Description;
             domainMovie.Genre = vm.Genre;
             domainMovie.ReleaseDate = vm.ReleaseDate;
+            domainMovie.MovieTags = vm.SelectedTags.Select(tagId => new MovieTag() { TagId = tagId }).ToList();
 
             _movieDbContext.Update(domainMovie);
 
