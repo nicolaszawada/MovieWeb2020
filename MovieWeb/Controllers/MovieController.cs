@@ -86,7 +86,7 @@ namespace MovieWeb.Controllers
 
             foreach (WatchStatus watchStatus in watchStatuses)
             {
-                vm.WatchStatuses.Add(new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem()
+                vm.WatchStatuses.Add(new SelectListItem()
                 {
                     Value = watchStatus.Id.ToString(),
                     Text = watchStatus.Name

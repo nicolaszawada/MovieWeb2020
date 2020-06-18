@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using MovieWeb.Database;
 using MovieWeb.Services;
 using System;
+using System.Diagnostics;
 
 namespace MovieWeb
 {
@@ -30,7 +31,7 @@ namespace MovieWeb
 
             services.AddDbContext<MovieDbContext>(options =>
             {
-                options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=MovieWeb;Trusted_Connection=True;MultipleActiveResultSets=true");
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
         }
 
@@ -47,6 +48,7 @@ namespace MovieWeb
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
