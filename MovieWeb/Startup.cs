@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MovieWeb.Database;
+using MovieWeb.Domain;
 using MovieWeb.Services;
 using System;
 using System.Diagnostics;
@@ -33,6 +35,8 @@ namespace MovieWeb
             {
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
+
+            services.AddDefaultIdentity<MovieAppUser>().AddEntityFrameworkStores<MovieDbContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -53,7 +57,7 @@ namespace MovieWeb
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -61,6 +65,8 @@ namespace MovieWeb
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Movie}/{action=Index}/{id?}");
+
+                endpoints.MapRazorPages();
             });
         }
     }

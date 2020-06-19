@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MovieWeb.Domain;
 
 namespace MovieWeb.Database
 {
-    public class MovieDbContext : DbContext
+    public class MovieDbContext : IdentityDbContext<MovieAppUser>
     {
         public MovieDbContext(DbContextOptions<MovieDbContext> options) : base(options)
         {

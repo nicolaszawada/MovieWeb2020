@@ -1,44 +1,46 @@
 ﻿@model IEnumerable<MovieWeb.Models.MovieListViewModel>
+@inject Microsoft.AspNetCore.Identity.SignInManager<MovieWeb.Domain.MovieAppUser> SignInManager
 
 <h1>Film overzicht</h1>
 
-@if(Model == null || !Model.Any())
+@if (Model == null || !Model.Any())
 {
     <p>Er zijn geen films!</p>
 }
 else
 {
-<table>
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th></th>
-            <th></th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var movie in Model)
-        {
-        <tr>
-            <td>
-                @movie.Title
-            </td>
-            <td>
-                <a asp-controller="Movie" asp-action="Detail" asp-route-id="@movie.Id">Detail</a>
-            </td>
-            <td>
-                <a asp-controller="Movie" asp-action="Edit" asp-route-id="@movie.Id">Edit</a>
-            </td>
-            <td>
-                <a asp-controller="Movie" asp-action="Delete" asp-route-id="@movie.Id">Delete</a>
-            </td>
-        </tr>
-        }
-    </tbody>
-</table>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var movie in Model)
+            {
+                <tr>
+                    <td>
+                        @movie.Title
+                    </td>
+                    <td>
+                        <a asp-controller="Movie" asp-action="Detail" asp-route-id="@movie.Id">Detail</a>
+                    </td>
+                    <td>
+                        <a asp-controller="Movie" asp-action="Edit" asp-route-id="@movie.Id">Edit</a>
+                    </td>
+                    <td>
+                        <a asp-controller="Movie" asp-action="Delete" asp-route-id="@movie.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 
-
-
-<a asp-controller="Movie" asp-action="Create">Create movie</a>
+@if (SignInManager.IsSignedIn(User))
+{
+    <a asp-controller="Movie" asp-action="Create">Create movie</a>
+}
