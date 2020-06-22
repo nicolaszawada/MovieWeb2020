@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +9,6 @@ using MovieWeb.Database;
 using MovieWeb.Domain;
 using MovieWeb.Services;
 using System;
-using System.Diagnostics;
 
 namespace MovieWeb
 {
@@ -36,11 +33,13 @@ namespace MovieWeb
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
 
-            services.AddDefaultIdentity<MovieAppUser>().AddEntityFrameworkStores<MovieDbContext>();
+            services.AddDefaultIdentity<MovieAppUser>()
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<MovieDbContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -68,6 +67,33 @@ namespace MovieWeb
 
                 endpoints.MapRazorPages();
             });
+
+            CreateRolesAndAssignUsers(serviceProvider);
+        }
+
+        private void CreateRolesAndAssignUsers(IServiceProvider serviceProvider)
+        {
+            CreateRoleIfNotExists(serviceProvider, "Admin");
+            CreateRoleIfNotExists(serviceProvider, "Mod");
+
+            var userManager = serviceProvider.GetRequiredService<UserManager<MovieAppUser>>();
+
+            var nicolas = userManager.FindByEmailAsync("nicolas.zawada@gmail.com").Result;
+
+            if (!userManager.IsInRoleAsync(nicolas, "Admin").Result)
+            {
+                userManager.AddToRoleAsync(nicolas, "Admin").Wait();
+            }
+        }
+
+        private static void CreateRoleIfNotExists(IServiceProvider serviceProvider, string role)
+        {
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            if (!roleManager.RoleExistsAsync(role).Result)
+            {
+                roleManager.CreateAsync(new IdentityRole(role)).Wait();
+            }
         }
     }
 }

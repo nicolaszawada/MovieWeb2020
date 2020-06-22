@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MovieWeb.Controllers
@@ -30,9 +31,14 @@ namespace MovieWeb.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Index()
         {
-            IEnumerable<Movie> moviesFromDb = await _movieDbContext.Movies.ToListAsync();
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            IEnumerable<Movie> moviesFromDb = await _movieDbContext.Movies
+                .Where(movie => movie.MovieAppUserId == userId)
+                .ToListAsync();
 
             List<MovieListViewModel> movies = new List<MovieListViewModel>();
 
@@ -47,12 +53,14 @@ namespace MovieWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> Detail(int id)
         {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             Movie movieFromDb =
                 await _movieDbContext.Movies
                 .Include(movie => movie.WatchStatus)
                 .Include(movie => movie.MovieTags)
                 .ThenInclude(movieTag => movieTag.Tag)
-                .FirstOrDefaultAsync(movie => movie.Id == id);
+                .FirstOrDefaultAsync(movie => movie.Id == id && movie.MovieAppUserId == userId);
 
             MovieDetailViewModel movie = new MovieDetailViewModel()
             {
@@ -111,6 +119,7 @@ namespace MovieWeb.Controllers
                 return View(movie);
             }
 
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             Movie newMovie = new Movie()
             {
@@ -119,6 +128,7 @@ namespace MovieWeb.Controllers
                 ReleaseDate = movie.ReleaseDate,
                 Genre = movie.Genre,
                 WatchStatusId = movie.SelectedWatchStatus,
+                MovieAppUserId = userId
                 // MovieTag = movie.SelectedTags.Select(tag => new MovieTag() { TagId = tag }).ToList()
             };
 

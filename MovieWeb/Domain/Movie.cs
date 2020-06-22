@@ -18,5 +18,8 @@ namespace MovieWeb.Domain
         public WatchStatus WatchStatus { get; set; }
         public int WatchStatusId { get; set; }
         public ICollection<MovieTag> MovieTags { get; set; }
+
+        public MovieAppUser MovieAppUser { get; set; }
+        public string MovieAppUserId { get; set; }
     }
 }
