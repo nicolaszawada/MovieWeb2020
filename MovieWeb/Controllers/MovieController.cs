@@ -86,7 +86,7 @@ namespace MovieWeb.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
             MovieCreateViewModel vm = new MovieCreateViewModel();
@@ -111,7 +111,7 @@ namespace MovieWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(MovieCreateViewModel movie)
         {
             if (!TryValidateModel(movie))

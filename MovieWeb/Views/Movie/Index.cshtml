@@ -44,3 +44,9 @@ else
 {
     <a asp-controller="Movie" asp-action="Create">Create movie</a>
 }
+
+
+@if (User.IsInRole("Admin"))
+{
+    <p>you are admin!</p>
+}
